@@ -2,7 +2,6 @@ package router
 
 import (
 	"yafa/internal/delivery"
-	"yafa/internal/pkg/serializer"
 	"yafa/internal/repository"
 
 	"github.com/jackc/pgx"
@@ -46,7 +45,7 @@ func New(db *pgx.ConnPool) *echo.Echo {
 	e.GET("/api/user/:nickname/profile", userHandler.GetByNickname)
 	e.POST("/api/user/:nickname/profile", userHandler.Update)
 
-	e.JSONSerializer = serializer.EasyJsonSerializer{}
+	// e.JSONSerializer = serializer.EasyJsonSerializer{}
 
 	return e
 }

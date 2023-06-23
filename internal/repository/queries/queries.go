@@ -2,6 +2,8 @@ package queries
 
 import (
 	"bytes"
+	"fmt"
+	"strings"
 	"text/template"
 )
 
@@ -24,14 +26,14 @@ const (
 )
 
 const (
-	CreateThread      = `INSERT INTO thread (title, author, forum, message, slug, created) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, title, author, forum, message, votes, slug, created;`
-	UpdateThread      = `UPDATE thread SET title = $1, message = $2 WHERE id = $3 RETURNING id, title, author, forum, message, votes, slug, created;`
-	GetThread         = `SELECT id, title, author, forum, message, votes, slug, created FROM thread WHERE slug = $1 OR id = $2;`
-	CheckThreadPost   = `SELECT id FROM post WHERE thread = $1 AND id = $2;`
-	CreateThreadPosts = `INSERT INTO post (parent, author, message, forum, thread, created) values `
-	CheckVotes        = `SELECT id, "user", thread, voice from vote where "user" = $1 and thread = $2;`
-	CreateVote        = `INSERT INTO vote ("user", thread, voice)  VALUES ($1, $2, $3)  RETURNING "user";`
-	UpdateVote        = `UPDATE vote SET voice = $1 WHERE id = $2 RETURNING id;`
+	CreateThread    = `INSERT INTO thread (title, author, forum, message, slug, created) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, title, author, forum, message, votes, slug, created;`
+	UpdateThread    = `UPDATE thread SET title = $1, message = $2 WHERE id = $3 RETURNING id, title, author, forum, message, votes, slug, created;`
+	GetThread       = `SELECT id, title, author, forum, message, votes, slug, created FROM thread WHERE slug = $1 OR id = $2;`
+	CheckThreadPost = `SELECT id FROM post WHERE thread = $1 AND id = $2;`
+	// CreateThreadPosts = `INSERT INTO post (parent, author, message, forum, thread, created) values `
+	CheckVotes = `SELECT id, "user", thread, voice from vote where "user" = $1 and thread = $2;`
+	CreateVote = `INSERT INTO vote ("user", thread, voice)  VALUES ($1, $2, $3)  RETURNING "user";`
+	UpdateVote = `UPDATE vote SET voice = $1 WHERE id = $2 RETURNING id;`
 )
 
 const (
@@ -49,10 +51,9 @@ type Params struct {
 	Sort  string
 }
 
-var out = bytes.NewBuffer(nil)
 
 func Render(t *template.Template, v any) (string, error) {
-	out.Reset()
+	var out = bytes.NewBuffer(nil)
 	err := t.Execute(out, v)
 	return out.String(), err
 }
@@ -120,8 +121,23 @@ ORDER BY path[1] {{$desc}}, path
 {{end}};
 `))
 
-var CreateThreadPostsTemplate = template.Must(template.New("").Parse(`
-INSERT INTO post (parent, author, message, forum, thread, created) VALUES 
-{{.}}
-RETURNING id, parent, author, message, is_edited, forum, thread, created;
-`))
+
+func CreateThreadPosts(postsCount int) string {
+	var sb = strings.Builder{}
+	sb.WriteString(`INSERT INTO post (parent, author, message, forum, thread, created) VALUES `)
+	six := 6 * (postsCount - 1)
+	for i := 0; i < six; i += 6 {
+		sb.WriteString(fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d),\n", i+1, i+2, i+3, i+4, i+5, i+6))
+	}
+	if postsCount > 0 {
+		sb.WriteString(fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)\n", six+1, six+2, six+3, six+4, six+5, six+6))
+	}
+	sb.WriteString(`RETURNING id, parent, author, message, is_edited, forum, thread, created;`)
+	return sb.String()
+}
+
+// var CreateThreadPostsTemplate = template.Must(template.New("").Parse(`
+// INSERT INTO post (parent, author, message, forum, thread, created) VALUES
+// {{.}}
+// RETURNING id, parent, author, message, is_edited, forum, thread, created;
+// `))

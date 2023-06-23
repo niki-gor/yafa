@@ -1,10 +1,8 @@
 package repository
 
 import (
-	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"yafa/internal/model"
@@ -60,20 +58,13 @@ func (r *threadRepo) CheckPost(parent int64, id int) (err error) {
 }
 
 func (r *threadRepo) CreatePosts(thread model.Thread, new model.Posts) (response *model.Posts, err error) {
-	queryRows := make([]string, 0, len(new.Posts))
 	values := make([]any, 0, 6*len(new.Posts))
 	created := time.Now()
-	for i, post := range new.Posts {
-		queryRows = append(queryRows, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)", 1+i*6, 2+i*6, 3+i*6, 4+i*6, 5+i*6, 6+i*6))
+	for _, post := range new.Posts {
 		values = append(values, post.Parent, post.Author, post.Message, thread.Forum, thread.Id, created)
 	}
 
-	query, err := queries.Render(queries.CreateThreadPostsTemplate, strings.Join(queryRows, ",\n"))
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := r.db.Query(query, values...)
+	rows, err := r.db.Query(queries.CreateThreadPosts(len(new.Posts)), values...)
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,7 @@ CREATE EXTENSION citext;
 
 CREATE UNLOGGED TABLE users (
     id       BIGSERIAL PRIMARY KEY,
-    nickname CITEXT UNIQUE,
+    nickname CITEXT collate "ucs_basic" UNIQUE,
     fullname CITEXT,
     about    TEXT,
     email    CITEXT UNIQUE
@@ -55,6 +55,9 @@ CREATE UNLOGGED TABLE vote (
     UNIQUE ("user", thread)
 );
 
+
+CREATE INDEX IF NOT EXISTS users__nickname_idx 
+ON users (nickname);
 
 CREATE INDEX users__info_idx 
 on users (nickname, fullname, about, email);
