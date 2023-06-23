@@ -8,20 +8,20 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type ServiceHandlersI interface {
+type ServiceHandler interface {
 	Status(ctx echo.Context) error
 	Clear(ctx echo.Context) error
 }
 
-type serviceH struct {
+type serviceHandler struct {
 	serviceRepo repository.ServiceRepo
 }
 
-func NewServiceHandler(s repository.ServiceRepo) ServiceHandlersI {
-	return &serviceH{serviceRepo: s}
+func NewServiceHandler(s repository.ServiceRepo) ServiceHandler {
+	return &serviceHandler{serviceRepo: s}
 }
 
-func (h *serviceH) Status(ctx echo.Context) error {
+func (h *serviceHandler) Status(ctx echo.Context) error {
 	status, err := h.serviceRepo.Status()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError)
@@ -30,7 +30,7 @@ func (h *serviceH) Status(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, status)
 }
 
-func (h *serviceH) Clear(ctx echo.Context) error {
+func (h *serviceHandler) Clear(ctx echo.Context) error {
 	err := h.serviceRepo.Clear()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

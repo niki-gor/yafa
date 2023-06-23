@@ -11,22 +11,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type PostHandlersI interface {
+type PostHandler interface {
 	GetDetails(ctx echo.Context) error
 	UpdateDetails(ctx echo.Context) error
 }
 
-type postH struct {
+type postHandler struct {
 	postRepo repository.PostRepo
 }
 
-func NewPostHandler(p repository.PostRepo) PostHandlersI {
-	return &postH{
+func NewPostHandler(p repository.PostRepo) PostHandler {
+	return &postHandler{
 		postRepo: p,
 	}
 }
 
-func (h *postH) GetDetails(ctx echo.Context) error {
+func (h *postHandler) GetDetails(ctx echo.Context) error {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound)
@@ -41,7 +41,7 @@ func (h *postH) GetDetails(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, post)
 }
 
-func (h *postH) UpdateDetails(ctx echo.Context) error {
+func (h *postHandler) UpdateDetails(ctx echo.Context) error {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound)

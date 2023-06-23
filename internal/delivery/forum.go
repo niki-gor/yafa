@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type ForumHandlersI interface {
+type ForumHandler interface {
 	Create(ctx echo.Context) error
 	Details(ctx echo.Context) error
 	CreateThread(ctx echo.Context) error
@@ -17,21 +17,21 @@ type ForumHandlersI interface {
 	ForumUsers(ctx echo.Context) error
 }
 
-type forumH struct {
+type forumHandler struct {
 	forumRepo  repository.ForumRepo
 	userRepo   repository.UserRepo
 	threadRepo repository.ThreadRepo
 }
 
-func NewForumHandler(f repository.ForumRepo, u repository.UserRepo, t repository.ThreadRepo) ForumHandlersI {
-	return &forumH{
+func NewForumHandler(f repository.ForumRepo, u repository.UserRepo, t repository.ThreadRepo) ForumHandler {
+	return &forumHandler{
 		forumRepo:  f,
 		userRepo:   u,
 		threadRepo: t,
 	}
 }
 
-func (h *forumH) Create(ctx echo.Context) error {
+func (h *forumHandler) Create(ctx echo.Context) error {
 	forum := model.Forum{}
 	err := ctx.Bind(&forum)
 	if err != nil {
@@ -58,7 +58,7 @@ func (h *forumH) Create(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, newForum)
 }
 
-func (h *forumH) Details(ctx echo.Context) error {
+func (h *forumHandler) Details(ctx echo.Context) error {
 	checkForum, err := h.forumRepo.GetBySlug(ctx.Param("slug"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound)
@@ -67,7 +67,7 @@ func (h *forumH) Details(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, checkForum)
 }
 
-func (h *forumH) CreateThread(ctx echo.Context) error {
+func (h *forumHandler) CreateThread(ctx echo.Context) error {
 	checkForum, err := h.forumRepo.GetBySlug(ctx.Param("slug"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound)
@@ -102,7 +102,7 @@ func (h *forumH) CreateThread(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, newThread)
 }
 
-func (h *forumH) ForumThreads(ctx echo.Context) error {
+func (h *forumHandler) ForumThreads(ctx echo.Context) error {
 	slug := ctx.Param("slug")
 	_, err := h.forumRepo.GetBySlug(slug)
 	if err != nil {
@@ -131,7 +131,7 @@ func (h *forumH) ForumThreads(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, threads)
 }
 
-func (h *forumH) ForumUsers(ctx echo.Context) error {
+func (h *forumHandler) ForumUsers(ctx echo.Context) error {
 	slug := ctx.Param("slug")
 	forum, err := h.forumRepo.GetBySlug(slug)
 	if err != nil {

@@ -8,23 +8,23 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type UserHandlersI interface {
+type UserHandler interface {
 	Create(ctx echo.Context) error
 	GetByNickname(ctx echo.Context) error
 	Update(ctx echo.Context) error
 }
 
-type userH struct {
+type userHandler struct {
 	userRepo repository.UserRepo
 }
 
-func NewUserHandler(u repository.UserRepo) UserHandlersI {
-	return &userH{
+func NewUserHandler(u repository.UserRepo) UserHandler {
+	return &userHandler{
 		userRepo: u,
 	}
 }
 
-func (h *userH) Create(ctx echo.Context) error {
+func (h *userHandler) Create(ctx echo.Context) error {
 	var user model.User
 	err := ctx.Bind(&user)
 	if err != nil {
@@ -45,7 +45,7 @@ func (h *userH) Create(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, user)
 }
 
-func (h *userH) GetByNickname(ctx echo.Context) error {
+func (h *userHandler) GetByNickname(ctx echo.Context) error {
 	user, err := h.userRepo.GetByNickname(ctx.Param("nickname"))
 
 	if err != nil {
@@ -55,7 +55,7 @@ func (h *userH) GetByNickname(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, user)
 }
 
-func (h *userH) Update(ctx echo.Context) error {
+func (h *userHandler) Update(ctx echo.Context) error {
 	newUserData, err := h.userRepo.GetByNickname(ctx.Param("nickname"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound)

@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type ThreadHandlersI interface {
+type ThreadHandler interface {
 	CreatePost(ctx echo.Context) error
 	CreateVote(ctx echo.Context) error
 	Details(ctx echo.Context) error
@@ -17,16 +17,16 @@ type ThreadHandlersI interface {
 	Update(ctx echo.Context) error
 }
 
-type threadH struct {
+type threadHandler struct {
 	threadRepo repository.ThreadRepo
 	userRepo   repository.UserRepo
 }
 
-func NewThreadHandler(t repository.ThreadRepo, u repository.UserRepo) ThreadHandlersI {
-	return &threadH{threadRepo: t, userRepo: u}
+func NewThreadHandler(t repository.ThreadRepo, u repository.UserRepo) ThreadHandler {
+	return &threadHandler{threadRepo: t, userRepo: u}
 }
 
-func (h *threadH) CreatePost(ctx echo.Context) error {
+func (h *threadHandler) CreatePost(ctx echo.Context) error {
 	slugOrId := ctx.Param("slug_or_id")
 
 	thread, err := h.threadRepo.GetBySlugOrId(slugOrId)
@@ -67,7 +67,7 @@ func (h *threadH) CreatePost(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, response.Posts)
 }
 
-func (h *threadH) CreateVote(ctx echo.Context) error {
+func (h *threadHandler) CreateVote(ctx echo.Context) error {
 	slugOrId := ctx.Param("slug_or_id")
 
 	thread, err := h.threadRepo.GetBySlugOrId(slugOrId)
@@ -106,7 +106,7 @@ func (h *threadH) CreateVote(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, thread)
 }
 
-func (h *threadH) Details(ctx echo.Context) error {
+func (h *threadHandler) Details(ctx echo.Context) error {
 	slugOrId := ctx.Param("slug_or_id")
 
 	thread, err := h.threadRepo.GetBySlugOrId(slugOrId)
@@ -117,7 +117,7 @@ func (h *threadH) Details(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, thread)
 }
 
-func (h *threadH) ThreadPost(ctx echo.Context) error {
+func (h *threadHandler) ThreadPost(ctx echo.Context) error {
 	slugOrId := ctx.Param("slug_or_id")
 
 	thread, err := h.threadRepo.GetBySlugOrId(slugOrId)
@@ -152,7 +152,7 @@ func (h *threadH) ThreadPost(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, posts)
 }
 
-func (h *threadH) Update(ctx echo.Context) error {
+func (h *threadHandler) Update(ctx echo.Context) error {
 	slugOrId := ctx.Param("slug_or_id")
 
 	thread, err := h.threadRepo.GetBySlugOrId(slugOrId)
